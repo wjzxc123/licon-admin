@@ -17,7 +17,8 @@
       "~/*": ["./*"],
       "@/*": ["./src/*"]
     },
-    "types": ["node", "naive-ui/volar", "unplugin-vue-define-options"]
+    "types": ["node", "naive-ui/volar", "unplugin-vue-define-options"],
+    "sourceMap": true
   },
   "exclude": ["node_modules", "dist"]
 }

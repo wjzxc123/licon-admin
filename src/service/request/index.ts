@@ -9,4 +9,4 @@ export const request = createRequest({ baseURL: isHttpProxy ? urlPattern : url }
 
 export const secondRequest = createRequest({ baseURL: isHttpProxy ? secondUrlPattern : secondUrl });
 
-export const mockRequest = createRequest({ baseURL: '/mock' });
+export const mockRequest = createRequest({ baseURL: isHttpProxy ? urlPattern : url });
