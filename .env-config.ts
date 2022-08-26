@@ -4,22 +4,22 @@ type ServiceEnv = Record<ServiceEnvType, ServiceEnvConfig>;
 /** 不同请求服务的环境配置 */
 const serviceEnv: ServiceEnv = {
   dev: {
-    url: 'http://localhost:8080',
-    urlPattern: '',
+    url: 'http://localhost:8080/',
+    urlPattern: '/api',
     secondUrl: 'http://localhost:8081',
-    secondUrlPattern: '/second-url-pattern'
+    secondUrlPattern: '/scond-url-pattern'
   },
   test: {
     url: 'http://localhost:8080',
-    urlPattern: '',
+    urlPattern: '/api',
     secondUrl: 'http://localhost:8081',
-    secondUrlPattern: '/second-url-pattern'
+    secondUrlPattern: '/scond-url-pattern'
   },
   prod: {
     url: 'http://localhost:8080',
-    urlPattern: '',
+    urlPattern: '/api',
     secondUrl: 'http://localhost:8081',
-    secondUrlPattern: '/second-url-pattern'
+    secondUrlPattern: '/scond-url-pattern'
   }
 };
 

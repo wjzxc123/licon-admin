@@ -1,4 +1,4 @@
-import { mockRequest } from '../request';
+import { mockRequest, request } from '../request';
 
 /**
  * 获取验证码
@@ -15,12 +15,16 @@ export function fetchSmsCode(phone: string) {
  * @param password - 密码
  */
 export function fetchLogin(username: string, password: string) {
-  return mockRequest.post<ApiAuth.Token>('/authorize/login', { username, password });
+  return request.post<ApiAuth.Token>('/authorize/login', { username, password });
+}
+
+export function fetchLoginTotp(smscode: string, mfaId: string) {
+  return request.post<ApiAuth.Token>('/authorize/totp', { code: smscode, mfaId });
 }
 
 /** 获取用户信息 */
 export function fetchUserInfo() {
-  return mockRequest.post<ApiAuth.UserInfo>('/api/getUserInfo', {});
+  return request.post<ApiAuth.UserInfo>('/api/getUserInfo', {});
 }
 
 /**
@@ -38,4 +42,13 @@ export function fetchUserRoutes(userId: string) {
  */
 export function fetchUpdateToken(refreshToken: string) {
   return mockRequest.post<ApiAuth.Token>('/updateToken', { refreshToken });
+}
+
+/**
+ *
+ * @param mfaId
+ * @returns
+ */
+export function fetchSendCode(mfaId: string) {
+  return request.put<void>('/authorize/send', { mfaId });
 }

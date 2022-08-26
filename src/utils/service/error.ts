@@ -17,11 +17,12 @@ type ErrorStatus = keyof typeof ERROR_STATUS;
  * 处理axios请求失败的错误
  * @param axiosError - 错误
  */
-export function handleAxiosError(axiosError: AxiosError) {
+export function handleAxiosError(axiosError: AxiosError): Service.RequestError {
   const error: Service.RequestError = {
     type: 'axios',
     code: DEFAULT_REQUEST_ERROR_CODE,
-    msg: DEFAULT_REQUEST_ERROR_MSG
+    msg: DEFAULT_REQUEST_ERROR_MSG,
+    headers: {}
   };
 
   const actions: Common.StrategyAction[] = [
@@ -45,14 +46,22 @@ export function handleAxiosError(axiosError: AxiosError) {
       () => {
         const errorCode: ErrorStatus = (axiosError.response?.status as ErrorStatus) || 'DEFAULT';
         const msg = ERROR_STATUS[errorCode];
-        Object.assign(error, { code: errorCode, msg });
+        const headers = axiosError.response?.headers;
+        const data = axiosError.response?.data;
+        Object.assign(error, { code: errorCode, msg, headers, data });
       }
     ]
   ];
 
   exeStrategyActions(actions);
 
-  showErrorMsg(error);
+  if (error !== null && !error.headers['x-authenticate']) {
+    if (error.data) {
+      window.$message?.error(error.data.detail);
+    } else {
+      showErrorMsg(error);
+    }
+  }
 
   return error;
 }

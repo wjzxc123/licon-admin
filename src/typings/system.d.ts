@@ -37,6 +37,10 @@ declare namespace Service {
     code: string | number;
     /** 错误信息 */
     msg: string;
+    // 响应头
+    headers?: { [header: string]: string };
+    // 响应失败也可以有数据
+    data?: any;
   }
 
   /** 后端接口返回的数据结构配置 */

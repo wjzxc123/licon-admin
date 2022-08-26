@@ -1,6 +1,7 @@
-import { computed } from 'vue';
+import { computed, reactive } from 'vue';
+import { e } from 'unocss';
 import { REGEXP_PHONE } from '@/config';
-import { fetchSmsCode } from '@/service';
+import { fetchSmsCode, fetchSendCode } from '@/service';
 import { useLoading } from '../common';
 import useCountDown from './useCountDown';
 
@@ -51,11 +52,35 @@ export default function useSmsCode() {
     endLoading();
   }
 
+  const a = reactive({ flag: true });
+  const authentication = computed(() => {
+    return a.flag;
+  });
+  async function getSmsCheckCode(mfaId: string, firstSend: boolean) {
+    if (firstSend) {
+      start();
+    }
+    if (loading.value) return;
+    startLoading();
+    const { data, error } = await fetchSendCode(mfaId);
+    if (error) {
+      a.flag = false;
+    } else {
+      if (data === null) {
+        window.$message?.success('验证码发送成功！');
+        start();
+      }
+    }
+    endLoading();
+  }
+
   return {
     label,
     start,
     isCounting,
     getSmsCode,
-    loading
+    getSmsCheckCode,
+    loading,
+    authentication
   };
 }

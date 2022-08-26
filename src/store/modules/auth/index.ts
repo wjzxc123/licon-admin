@@ -1,9 +1,11 @@
 import { unref } from 'vue';
 import { defineStore } from 'pinia';
 import { router } from '@/router';
-import { fetchLogin, fetchUserInfo } from '@/service';
+import { fetchLogin, fetchUserInfo, fetchSendCode, fetchLoginTotp } from '@/service';
 import { useRouterPush } from '@/composables';
 import { clearAuthStorage, getToken, getUserInfo, setRefreshToken, setToken, setUserInfo } from '@/utils';
+import { showErrorMsg } from '@/utils/service/msg';
+import api from '~/mock/api';
 import { useTabStore } from '../tab';
 import { useRouteStore } from '../route';
 
@@ -14,21 +16,33 @@ interface AuthState {
   token: string;
   /** 登录的加载状态 */
   loginLoading: boolean;
+
+  showCodeInput: boolean;
+
+  mfaId: string;
 }
 
 export const useAuthStore = defineStore('auth-store', {
   state: (): AuthState => ({
     userInfo: getUserInfo(),
     token: getToken(),
-    loginLoading: false
+    loginLoading: false,
+    showCodeInput: false,
+    mfaId: ''
   }),
   getters: {
+    getMfaId(state): string {
+      return state.mfaId;
+    },
     /** 是否登录 */
     isLogin(state) {
       return Boolean(state.token);
     }
   },
   actions: {
+    setShowCodeInput(value) {
+      this.showCodeInput = value;
+    },
     /** 重置auth状态 */
     resetAuthStore() {
       const { toLogin } = useRouterPush(false);
@@ -106,11 +120,31 @@ export const useAuthStore = defineStore('auth-store', {
      */
     async login(userName: string, password: string) {
       this.loginLoading = true;
-      const { data } = await fetchLogin(userName, password);
+      const { data, error } = await fetchLogin(userName, password);
+      if (data) {
+        await this.handleActionAfterLogin(data);
+      } else {
+        // 短信认证方式
+        if (error !== null && error.code === 401 && Object.prototype.hasOwnProperty.call(error, 'headers')) {
+          if (error.headers['x-authenticate']?.includes('smsmfa')) {
+            this.showCodeInput = true;
+            const authHeader = error.headers['x-authenticate'];
+            const splitValue = authHeader.split('=');
+            this.mfaId = splitValue[1];
+            // await this.sendCode(splitValue[1]);
+          } else {
+            showErrorMsg(error);
+          }
+        }
+      }
+      this.loginLoading = false;
+    },
+
+    async loginByCode(code: string, mfaId: string) {
+      const { data, error } = await fetchLoginTotp(code, mfaId);
       if (data) {
         await this.handleActionAfterLogin(data);
       }
-      this.loginLoading = false;
     },
     /**
      * 更换用户权限(切换账号)
@@ -140,6 +174,20 @@ export const useAuthStore = defineStore('auth-store', {
         resetRouteStore();
         initAuthRoute();
       }
+    },
+
+    async sendCode(mfaId: string) {
+      const { data, error } = await fetchSendCode(mfaId);
+      if (data) {
+        await this.handleActionAfterLogin(data);
+      } else {
+        if (error) {
+          if (error.data) {
+            this.resetAuthStore();
+          }
+        }
+      }
+      this.loginLoading = false;
     }
   }
 });

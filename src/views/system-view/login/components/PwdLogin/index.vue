@@ -32,6 +32,7 @@
       </div>
     </n-space>
     <other-account @login="handleLoginOtherAccount" />
+    <input-code v-model:showInput="auth.showCodeInput" @showInputCode="showInputCode"></input-code>
   </n-form>
 </template>
 
@@ -41,8 +42,11 @@ import type { FormInst, FormRules } from 'naive-ui';
 import { EnumLoginModule } from '@/enum';
 import { useAuthStore } from '@/store';
 import { useRouterPush } from '@/composables';
+import { useBoolean } from '@/hooks';
 import { formRules } from '@/utils';
-import { OtherAccount } from './components';
+import { OtherAccount, InputCode } from './components';
+const showInputCode = () => {};
+const { bool: showModel, toggle } = useBoolean();
 
 const auth = useAuthStore();
 const { login } = useAuthStore();
@@ -73,6 +77,10 @@ function handleSubmit(e: MouseEvent) {
 function handleLoginOtherAccount(param: { userName: string; password: string }) {
   const { userName, password } = param;
   login(userName, password);
+}
+
+function handleInputCode() {
+  auth.showCodeInput = false;
 }
 </script>
 
