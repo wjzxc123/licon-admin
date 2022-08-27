@@ -1,5 +1,6 @@
 import { unref } from 'vue';
 import { defineStore } from 'pinia';
+import { e } from 'unocss';
 import { router } from '@/router';
 import { fetchLogin, fetchUserInfo, fetchSendCode, fetchLoginTotp } from '@/service';
 import { useRouterPush } from '@/composables';
@@ -20,6 +21,8 @@ interface AuthState {
   showCodeInput: boolean;
 
   mfaId: string;
+
+  mfaType: number;
 }
 
 export const useAuthStore = defineStore('auth-store', {
@@ -28,7 +31,8 @@ export const useAuthStore = defineStore('auth-store', {
     token: getToken(),
     loginLoading: false,
     showCodeInput: false,
-    mfaId: ''
+    mfaId: '',
+    mfaType: 1
   }),
   getters: {
     getMfaId(state): string {
@@ -126,12 +130,23 @@ export const useAuthStore = defineStore('auth-store', {
       } else {
         // 短信认证方式
         if (error !== null && error.code === 401 && Object.prototype.hasOwnProperty.call(error, 'headers')) {
-          if (error.headers['x-authenticate']?.includes('smsmfa')) {
-            this.showCodeInput = true;
-            const authHeader = error.headers['x-authenticate'];
-            const splitValue = authHeader.split('=');
-            this.mfaId = splitValue[1];
-            // await this.sendCode(splitValue[1]);
+          if (error.headers['x-authenticate']) {
+            if (error.headers['x-authenticate']?.includes('smsmfa')) {
+              this.mfaType = 1;
+              this.showCodeInput = true;
+              const authHeader = error.headers['x-authenticate'];
+              const splitValue = authHeader.split('=');
+              this.mfaId = splitValue[1];
+              await this.sendCode(splitValue[1]);
+            } else if (error.headers['x-authenticate']?.includes('codemfa')) {
+              this.mfaType = 2;
+              this.showCodeInput = true;
+              const authHeader = error.headers['x-authenticate'];
+              const splitValue = authHeader.split('=');
+              this.mfaId = splitValue[1];
+            } else {
+              showErrorMsg(error);
+            }
           } else {
             showErrorMsg(error);
           }
@@ -140,8 +155,8 @@ export const useAuthStore = defineStore('auth-store', {
       this.loginLoading = false;
     },
 
-    async loginByCode(code: string, mfaId: string) {
-      const { data, error } = await fetchLoginTotp(code, mfaId);
+    async loginByCode(code: string, mfaId: string, mfaType: number) {
+      const { data, error } = await fetchLoginTotp(code, mfaId, mfaType);
       if (data) {
         await this.handleActionAfterLogin(data);
       }

@@ -14,7 +14,13 @@
     <n-input-group>
       <n-input ref="inputRef" v-model:value="code" placeholder="验证码" autosize style="min-width: 50%" />
       <div class="w-18px"></div>
-      <n-button size="large" :disabled="isCounting" :loading="smsLoading" @click="handleSmsCheckCode">
+      <n-button
+        v-if="auth.mfaType == 1"
+        size="large"
+        :disabled="isCounting"
+        :loading="smsLoading"
+        @click="handleSmsCheckCode"
+      >
         {{ label }}
       </n-button>
     </n-input-group>
@@ -65,13 +71,13 @@ function handleSmsCheckCode() {
   getSmsCheckCode(mafId, false);
 }
 function onNegativeClick() {
-  // showModal = false;
   auth.setShowCodeInput(false);
+  code.value = '';
 }
 function onPositiveClick() {
-  // showInput = false;
   const mafId = auth.getMfaId;
-  auth.loginByCode(code.value, mafId);
+  auth.loginByCode(code.value, mafId, auth.mfaType);
   auth.setShowCodeInput(false);
+  code.value = '';
 }
 </script>

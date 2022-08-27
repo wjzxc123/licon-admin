@@ -18,8 +18,8 @@ export function fetchLogin(username: string, password: string) {
   return request.post<ApiAuth.Token>('/authorize/login', { username, password });
 }
 
-export function fetchLoginTotp(smscode: string, mfaId: string) {
-  return request.post<ApiAuth.Token>('/authorize/totp', { code: smscode, mfaId });
+export function fetchLoginTotp(smscode: string, mfaId: string, mfaType: number) {
+  return request.post<ApiAuth.Token>('/authorize/totp', { code: smscode, mfaId, mfaType });
 }
 
 /** 获取用户信息 */

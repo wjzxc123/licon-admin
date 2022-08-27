@@ -60,6 +60,7 @@ export default function useSmsCode() {
     if (firstSend) {
       start();
     }
+    start();
     if (loading.value) return;
     startLoading();
     const { data, error } = await fetchSendCode(mfaId);
